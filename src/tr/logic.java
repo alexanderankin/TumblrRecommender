@@ -16,14 +16,19 @@ public class logic {
 	 */
 	public static void main(String[] args) throws IOException {
 
+		// Read in Data from User, define other useful things.
 		// String user = ""+".tumblr.com";
 		String user = "" + ".tumblr.com";
+
 		String api = "info?api_key=" + getAPIFromJSON()[0];
 		String base = "http://api.tumblr.com/v2/blog";// .tumblr.com/info?api_key={key}"
 		String apiResponse = "";
 		String url = base + "/" + user + "/" + api;
+		
+		//API Call
 		apiResponse = name(url);
 		
+		//Organize responses
 		ArrayList<APIResponse> responses = new ArrayList<>();
 		responses.add(new APIResponse(apiResponse,"blog"));
 		System.out.println(responses.get(0).getAction());
