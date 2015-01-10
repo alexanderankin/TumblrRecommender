@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class logic {
@@ -17,13 +18,15 @@ public class logic {
 
 		// String user = ""+".tumblr.com";
 		String user = "" + ".tumblr.com";
-		String apiKey = "info?api_key=" + getAPIFromJSON()[0];
+		String api = "info?api_key=" + getAPIFromJSON()[0];
 		String base = "http://api.tumblr.com/v2/blog";// .tumblr.com/info?api_key={key}"
 		String apiResponse = "";
-		String url = base + "/" + user + "/" + apiKey;
+		String url = base + "/" + user + "/" + api;
 		apiResponse = name(url);
 		
-		System.out.println(apiResponse);
+		ArrayList<APIResponse> responses = new ArrayList<>();
+		responses.add(new APIResponse(apiResponse,"blog"));
+		System.out.println(responses.get(0).getAction());
 
 	}
 
