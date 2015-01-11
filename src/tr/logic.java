@@ -14,24 +14,37 @@ public class logic {
 	/**
 	 * @param args
 	 */
+	public static final String TUMBLR = ".tumblr.com";
+
 	public static void main(String[] args) throws IOException {
 
-		// Read in Data from User, define other useful things.
-		// String user = ""+".tumblr.com";
-		String user = "" + ".tumblr.com";
+		// Read in Data from User
+		String user = "";
 
-		String api = "info?api_key=" + getAPIFromJSON()[0];
-		String base = "http://api.tumblr.com/v2/blog";// .tumblr.com/info?api_key={key}"
+		String url = "";
 		String apiResponse = "";
-		String url = base + "/" + user + "/" + api;
-		
-		//API Call
-		apiResponse = name(url);
-		
-		//Organize responses
+
+		// Format the url to request, and Call API
+		url = apiCallFormatter(user, "info");
+		apiResponse = apiCall(url);
+
+		// Store response
 		ArrayList<APIResponse> responses = new ArrayList<>();
-		responses.add(new APIResponse(apiResponse,"blog"));
+		responses.add(new APIResponse(apiResponse, "blog"));
 		System.out.println(responses.get(0).getAction());
+
+		// Get posts of user
+		url = apiCallFormatter(user, "posts");
+		apiResponse = apiCall(url);
+
+		responses.add(new APIResponse(apiResponse, "posts"));
+
+	}
+
+	public static String apiCallFormatter(String user, String action) throws IOException {
+		String api = "?api_key=" + getAPIFromJSON()[0];
+		String base = "http://api.tumblr.com/v2/blog";
+		return base + "/" + user + TUMBLR + "/" + action + api;
 
 	}
 
@@ -58,7 +71,8 @@ public class logic {
 
 		return result;
 	}
-	public static String name(String url) {
+
+	public static String apiCall(String url) {
 		String result = "";
 		try {
 			URL myUrl = new URL(url);
@@ -75,4 +89,3 @@ public class logic {
 		return result;
 	}
 }
-
