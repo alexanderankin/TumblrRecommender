@@ -31,10 +31,14 @@ public class logic {
 		// Store response
 		ArrayList<APIResponse> responses = new ArrayList<>();
 		responses.add(new APIResponse(apiResponse, "blog"));
-		System.out.println(responses.get(0).getAction());
+		// System.out.println(responses.get(0).getAction()); // prints "blog." 
 
 		// Get posts of user
 		url = apiCallFormatter(user, "posts");
+		// System.out.println(url);
+		// System.exit(0);
+		url = "http://api.tumblr.com/v2/blog/" + user + TUMBLR 
+				+"/posts?api_key=" + getAPIFromJSON()[0] + "&reblog_info=true";
 		apiResponse = apiCall(url);
 
 		responses.add(new APIResponse(apiResponse, "posts"));
