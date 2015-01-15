@@ -30,7 +30,7 @@ public class logic {
 
 		// Store response
 		ArrayList<APIResponse> responses = new ArrayList<>();
-		responses.add(new APIResponse(apiResponse, "blog"));
+		//responses.add(new APIResponse(apiResponse, "blog")); //  dont need this temprorarily
 		// System.out.println(responses.get(0).getAction()); // prints "blog." 
 
 		// Get posts of user
