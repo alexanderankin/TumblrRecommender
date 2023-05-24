@@ -1,95 +1,95 @@
 package tr;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Scanner;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.ToString;
+import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.Binder;
+import org.springframework.core.env.StandardEnvironment;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.File;
+import java.net.URI;
+import java.nio.file.Path;
+import java.util.Objects;
+
+@Slf4j
+@RequiredArgsConstructor
 public class logic {
 
-	/**
-	 * @param args
-	 */
 	public static final String TUMBLR = ".tumblr.com";
+	private final Configuration configuration;
 
-	public static void main(String[] args) throws IOException {
+	@SneakyThrows
+	public static void main(String[] args) {
+		File file = Path.of(System.getProperty("user.home"), ".tumblr-oauth-key.json").toFile();
+		if (!file.exists()) throw new AssertionError("TumblrRecommender requires an api key");
+
+		TumblrCredentials tumblrCredentials = new ObjectMapper()
+				.readValue(file, TumblrCredentials.class);
+
+		System.setProperty(Configuration.PREFIX + ".api-key",
+				Objects.requireNonNull(tumblrCredentials.getKey(),
+						"TumblrRecommender requires an api key"));
+
+		Configuration configuration = Binder.get(new StandardEnvironment())
+				.bind(Configuration.PREFIX, Configuration.class)
+				.orElseGet(Configuration::new);
 
 		// Read in Data from User
 		String user = "";
+		var logic = new logic(configuration);
+		var recommendation = logic.recommendationByUser(user);
+		log.info("recommendation: {}", recommendation);
+	}
 
-		String url = "";
-		String apiResponse = "";
-
+	@SneakyThrows
+	public Object recommendationByUser(String user) {
 		// Format the url to request, and Call API
-		url = apiCallFormatter(user, "info");
-		apiResponse = apiCall(url);
+		URI uri = UriComponentsBuilder.fromHttpUrl(configuration.getBaseUrl())
+				.path("/v2/blog/{user}/posts")
+				.queryParam("api_key", configuration.getApiKey())
+				.queryParam("reblog_info", true)
+				.build(user + TUMBLR);
 
 		// Store response
-		ArrayList<APIResponse> responses = new ArrayList<>();
-		//responses.add(new APIResponse(apiResponse, "blog")); //  dont need this temprorarily
-		// System.out.println(responses.get(0).getAction()); // prints "blog." 
-
-		// Get posts of user
-		url = apiCallFormatter(user, "posts");
-		// System.out.println(url);
-		// System.exit(0);
-		url = "http://api.tumblr.com/v2/blog/" + user + TUMBLR 
-				+"/posts?api_key=" + getAPIFromJSON()[0] + "&reblog_info=true";
-		apiResponse = apiCall(url);
-
-		responses.add(new APIResponse(apiResponse, "posts"));
-
-	}
-
-	public static String apiCallFormatter(String user, String action) throws IOException {
-		String api = "?api_key=" + getAPIFromJSON()[0];
-		String base = "http://api.tumblr.com/v2/blog";
-		return base + "/" + user + TUMBLR + "/" + action + api;
-
-	}
-
-	public static String[] getAPIFromJSON() throws IOException {
-		Scanner s = new Scanner(new FileReader(""));
-		String badJsonStr = "";
-		String jsonStr = "";
-		String[] result = { "", "" };
-		while (s.hasNext()) {
-			badJsonStr += s.next();
-		}
-
-		s.close();
-
-		for (int i = 0; i < badJsonStr.length(); i++) {
-			if (badJsonStr.charAt(i) != '\n' && badJsonStr.charAt(i) != ' ') {
-				jsonStr += badJsonStr.charAt(i);
-			}
-		}
-
-		// should be parsing json, not getting substrings.
-		result[0] = jsonStr.substring(jsonStr.length() - 119, jsonStr.length() - 69);
-		result[1] = jsonStr.substring(jsonStr.length() - 53, jsonStr.length() - 3);
-
-		return result;
+		String response = apiCall(uri.toString());
+		log.debug("abc");
+		return response;
 	}
 
 	public static String apiCall(String url) {
-		String result = "";
-		try {
-			URL myUrl = new URL(url);
-			URLConnection yc = myUrl.openConnection();
-			BufferedReader in = new BufferedReader(new InputStreamReader(yc.getInputStream()));
-			String inputLine;
-			while ((inputLine = in.readLine()) != null) {
-				result += inputLine;
-			}
-		} catch (Exception e) {
-			System.out.println("something went wrong!");
-			System.exit(0);
+		return WebClient.create().get().uri(url).retrieve().bodyToMono(String.class).block();
+	}
+
+	@Data
+	@Accessors(chain = true)
+	@SuppressWarnings("ConfigurationProperties")
+	@ConfigurationProperties(Configuration.PREFIX)
+	public static class Configuration {
+		private static final String PREFIX = "tr.configuration";
+		String baseUrl = "https://api.tumblr.com";
+		@ToString.Exclude
+		String apiKey;
+
+		@SuppressWarnings("unused")
+		@ToString.Include
+		private String apiKey() {
+			return apiKey == null ? null : "*";
 		}
-		return result;
+	}
+
+	@Data
+	@Accessors(chain = true)
+	private static class TumblrCredentials {
+		@ToString.Exclude
+		String key;
+		@ToString.Exclude
+		String secret;
 	}
 }

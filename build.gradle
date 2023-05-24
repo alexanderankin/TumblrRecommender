@@ -11,6 +11,11 @@ java {
 repositories.mavenCentral()
 application.mainClass.set 'tumblrrecommender.App'
 
+configurations {
+    testAnnotationProcessor.extendsFrom(annotationProcessor)
+    testCompileOnly.extendsFrom(compileOnly)
+}
+
 dependencies {
     implementation platform('org.springframework.boot:spring-boot-dependencies:3.1.0')
     annotationProcessor platform('org.springframework.boot:spring-boot-dependencies:3.1.0')
@@ -20,9 +25,14 @@ dependencies {
     annotationProcessor('org.springframework.boot:spring-boot-configuration-processor')
 
     implementation('org.springframework:spring-webflux')
+    implementation('org.springframework:spring-core')
+    implementation('org.springframework.boot:spring-boot')
     implementation('io.projectreactor.netty:reactor-netty')
     implementation('com.fasterxml.jackson.core:jackson-databind')
     implementation('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
+    implementation('ch.qos.logback:logback-classic')
+
+    testImplementation('org.springframework.boot:spring-boot-starter-test')
 }
 
 tasks.named('test', Test).configure { useJUnitPlatform() }
