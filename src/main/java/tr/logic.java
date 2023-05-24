@@ -58,13 +58,13 @@ public class logic {
 				.build(user + TUMBLR);
 
 		// Store response
-		String response = apiCall(uri.toString());
+		var response = getBlogPosts(uri.toString());
 		log.debug("abc");
 		return response;
 	}
 
-	public static String apiCall(String url) {
-		return WebClient.create().get().uri(url).retrieve().bodyToMono(String.class).block();
+	public static BlogPostsResponse getBlogPosts(String url) {
+		return WebClient.create().get().uri(url).retrieve().bodyToMono(BlogPostsResponse.class).block();
 	}
 
 	@Data
